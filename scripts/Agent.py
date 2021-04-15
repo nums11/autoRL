@@ -6,11 +6,7 @@ from collections import Counter
 import matplotlib.pyplot as plt
 import time
 
-class FrozenLakeAgent:
-  def __init__(self):
-    self.state_space_size = 64
-    self.action_space_size = 4
-
+class Agent:
   def printRewards(self, split, num_episodes, rewards):
     rewards_per_split_episodes = np.split(np.array(rewards),num_episodes/split)
     count = split
@@ -20,7 +16,15 @@ class FrozenLakeAgent:
       print(count, ": ", str(sum(r/split)))
       count += split
 
-  def savePolicyFromQTable(self, q_table, policy_name):
+  def savePolicyFromQTable(self, q_table, algo_prefix, num_episodes):
+    episode_str = ''
+    if num_episodes >= 1000000:
+      episode_str = str(int(num_episodes / 1000000)) + 'mil'
+    elif num_episodes >= 1000:
+      episode_str = str(int(num_episodes / 1000)) + 'k'
+    else:
+      episode_str = str(num_episodes)
+    policy_name = algo_prefix + '_' + 'policy_' + episode_str
     policy = self.getPolicyFromQTable(q_table)
     np.save('policies/' + policy_name + '.npy', policy)
 
@@ -34,7 +38,9 @@ class FrozenLakeAgent:
     done = False
     rewards_all_episodes = []
 
-    for episode in tqdm(range(num_episodes)):
+    print("Beginning Testing")
+    for episode in range(num_episodes):
+      print(f'Episode {episode} / {num_episodes}')
       state = env.reset()
       done = False
       rewards_current_episode = 0
@@ -47,9 +53,10 @@ class FrozenLakeAgent:
         new_state, reward, done, info = env.step(action)
         rewards_current_episode += reward
         state = new_state
+    print('Done Testing')
 
     avg_rewards = sum(rewards_all_episodes) / num_episodes
-    print(f'******* Average rewards across {num_episodes} *******')
+    print(f'******* Average rewards across {num_episodes} episodes *******')
     print(avg_rewards)
     counts = Counter(rewards_all_episodes)
     win_rate = (counts[1] / len(rewards_all_episodes)) * 100

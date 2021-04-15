@@ -1,6 +1,6 @@
 from Agent import *
 
-class QLearningAgent(Agent):
+class DoubleQLearningAgent(Agent):
   def train(self, env, state_space_size, action_space_size, num_episodes,
     learning_rate, epsilon, min_epsilon, epsilon_decay_rate, discount_factor,
     max_steps_per_episode):
@@ -34,8 +34,8 @@ class QLearningAgent(Agent):
 
         if done:
           # print("Reached goal or hole", reward)
-          # if reward > 0:
-          #   print("I won!", reward)
+          if reward > 0:
+            print("I won!", reward)
           break
 
       # Exponentially decay epsilon
@@ -49,9 +49,11 @@ class QLearningAgent(Agent):
         farthest_states[farthest_state_for_episode] = 0
 
     print('Done Training')
+
     self.printRewards(num_episodes/10, num_episodes, rewards_all_episodes)
-    # print("q_table", q_table)
-    self.savePolicyFromQTable(q_table, 'ql', num_episodes)
+    print("q_table", q_table)
+    self.savePolicyFromQTable(q_table, 'double_q_learning', num_episodes)
+    
     # farthest_states_ordered = collections.OrderedDict(sorted(farthest_states.items()))
     # self.plotFarthestStates(farthest_states_ordered)
 

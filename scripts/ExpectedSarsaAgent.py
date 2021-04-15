@@ -1,10 +1,11 @@
 from Agent import *
 
-class QLearningAgent(Agent):
+class ExpectedSarsaAgent(Agent):
   def train(self, env, state_space_size, action_space_size, num_episodes,
     learning_rate, epsilon, min_epsilon, epsilon_decay_rate, discount_factor,
     max_steps_per_episode):
     rewards_all_episodes = []
+    discount_factor = 0.9
     q_table = np.zeros((state_space_size, action_space_size))
     farthest_states = {}
 
@@ -27,15 +28,25 @@ class QLearningAgent(Agent):
 
         new_state, reward, done, info = env.step(action)
 
+        expectation = 0
+        next_max_action = np.argmax(q_table[new_state])
+        for possible_action in range(action_space_size):
+          prob = 0
+          if possible_action == next_max_action:
+            prob = 1 - epsilon
+          else:
+            prob = epsilon
+          expectation += (prob * q_table[new_state][possible_action])
+
         q_table[state][action] = q_table[state][action] + learning_rate * (
-          reward + discount_factor * np.max(q_table[new_state]) - q_table[state][action])
+          reward + discount_factor * expectation - q_table[state][action])
         state = new_state
         rewards_current_episode += reward
 
         if done:
           # print("Reached goal or hole", reward)
-          # if reward > 0:
-          #   print("I won!", reward)
+          if reward > 0:
+            print("I won!", reward)
           break
 
       # Exponentially decay epsilon
@@ -49,9 +60,10 @@ class QLearningAgent(Agent):
         farthest_states[farthest_state_for_episode] = 0
 
     print('Done Training')
+
     self.printRewards(num_episodes/10, num_episodes, rewards_all_episodes)
-    # print("q_table", q_table)
-    self.savePolicyFromQTable(q_table, 'ql', num_episodes)
+    print("q_table", q_table)
+    self.savePolicyFromQTable(q_table, 'expected_sarsa', num_episodes)
     # farthest_states_ordered = collections.OrderedDict(sorted(farthest_states.items()))
     # self.plotFarthestStates(farthest_states_ordered)
 
